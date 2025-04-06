@@ -1,0 +1,16 @@
+API Endpoints Table
+Method	Endpoint	Request	Response	Status	Errors
+POST	/api/signup	`{ "name": "string", "email": "string", "phone": "string	null", "password": "string", "type": "admin	user" }`	{ "message": "User registered. Please verify your email.", "token": "verification_token" }
+POST	/api/login	{ "email": "string", "password": "string" }	`{ "token": "access_token", "user": { "id": int, "name": "string", "email": "string", "phone": "string	null", "profile_pic": "string", "type": "admin	user" } }`
+POST	/api/forgot-password	{ "email": "string" }	{ "message": "Reset token sent to your email.", "token": "reset_token" }	200	{ "error": "Email not found" } (404)
+POST	/api/reset-password	{ "email": "string", "token": "string", "password": "string", "password_confirmation": "string" }	{ "message": "Password reset successfully" }	200	{ "error": "Invalid or expired token" } (400)
+GET	/api/verify-email	?token=verification_token	{ "message": "Email verified successfully", "token": "access_token", "user": { ... } }	200	{ "error": "Invalid token" } (400)
+POST	/api/logout	None (requires Authorization: Bearer token)	{ "message": "Logged out successfully" }	200	N/A
+POST	/api/rooms	{ "name": "string" }	{ "message": "Room created", "room": { "id": int, "name": "string", "created_by": int } }	201	{ "error": "Room limit reached" } (403)
+GET	/api/rooms	None	{ "rooms": [{ "id": int, "name": "string", "created_by": int, "users": [{ "id": int, "name": "string" }] }] }	200	N/A
+POST	/api/rooms/{room_id}/join	None (room_id in URL)	{ "message": "Joined room successfully" }	200	{ "error": "Room not found" } (404), { "error": "Already in room" } (400)
+POST	/api/transactions	`{ "room_id": int, "description": "string", "amount": float, "type": "dr	cr", "date": "YYYY-MM-DD" }`	`{ "message": "Transaction added", "transaction": { "id": int, "room_id": int, "user_id": int, "description": "string", "amount": float, "type": "dr	cr", "date": "string", "settled": false } }`
+GET	/api/rooms/{room_id}/transactions	None (room_id in URL)	`{ "transactions": [{ "id": int, "room_id": int, "user_id": int, "description": "string", "amount": float, "type": "dr	cr", "date": "string", "settled": bool, "user": { "id": int, "name": "string" } }] }`	200
+GET	/api/transactions	`?period=daily	weekly	monthly` (default: weekly)	`{ "transactions": [{ "id": int, "room_id": int, "user_id": int, "description": "string", "amount": float, "type": "dr
+GET	/api/debts	`?period=daily	weekly	monthly` (default: weekly)	{ "debts_owed": [{ "to_user": { "id": int, "name": "string" }, "amount": float, "transaction_id": int, "settled": bool }], "debts_owing": [{ "from_user": { "id": int, "name": "string" }, "amount": float, "transaction_id": int, "settled": bool }] }
+POST	/api/transactions/settle	{ "transaction_ids": [int, int, ...] }	{ "message": "Transactions settled", "settled_count": int }	200	{ "error": "Unauthorized" } (403), { "error": "No transactions settled" } (400)

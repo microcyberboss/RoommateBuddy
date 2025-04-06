@@ -1,0 +1,32 @@
+I want you to create a React Native app called "FinTrack" for roommate expense tracking, integrating with a Laravel API. Use Expo Router (v4.0.19) with TypeScript and NativeWind (v4.1.23) for Tailwind CSS styling. The app should follow this flow:
+
+### App Flow
+- **Initial State**: 
+  - If unauthenticated (no token in AsyncStorage), start at the **Login** screen.
+  - If authenticated, start at the **Home** tab.
+
+- **Authentication Flow**:
+  1. **Login Screen**: Enter email/password, redirect to **Home** tab on success. Links to **Signup** and **Forgot Password**.
+  2. **Signup Screen**: Enter name, email, phone, password; on success, go to **Verify Email** with a token.
+  3. **Forgot Password Screen**: Enter email, receive a reset token, go to **Reset Password**.
+  4. **Reset Password Screen**: Enter new password/confirmation with email/token, redirect to **Login** on success.
+  5. **Verify Email Screen**: Enter verification token, log in and redirect to **Home** tab on success.
+
+- **Main App Flow (Authenticated)**:
+  - **Tab Navigation**: Bottom tabs for **Home**, **Rooms**, **Profile**.
+  1. **Home Tab**: Welcome message with user’s name, buttons to **Rooms**, **Transactions**, **Debts**.
+  2. **Rooms Tab**: List rooms, create new room (name), join room (ID), button per room to **Add Transaction**.
+  3. **Profile Tab**: Show user details (name, email, phone, type), **Logout** button to clear auth and go to **Login**.
+  4. **Add Transaction Screen**: From a room, enter description, amount, type (dr/cr), date; return to **Rooms** on success.
+  5. **Transactions Screen**: List transactions with period filter (daily, weekly, monthly; default: weekly), checkboxes to select (disabled if settled/not owned), **Settle Selected** button.
+  6. **Debts Screen**: Show "Debts You Owe" and "Debts Owed to You" with period filter (daily, weekly, monthly; default: weekly).
+
+- **Navigation**: Use Expo Router file-based routing:
+  - Unauthenticated: `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/verify-email`.
+  - Authenticated: `/(tabs)/home`, `/(tabs)/rooms`, `/(tabs)/profile`, `/add-transaction`, `/transactions`, `/debts`.
+- **Styling**: Use NativeWind with Tailwind CSS (e.g., blue buttons, gray backgrounds, rounded inputs).
+
+### API Endpoints
+Use the following API endpoints with their request/response formats as listed in the table above (provide the table here).
+
+Generate the full app code, including API client, auth context, interfaces (User, Room, Transaction, Debt), and all screens. Use AsyncStorage for token/user persistence and axios for API calls. Ensure proper error handling with alerts and navigation using Expo Router.
