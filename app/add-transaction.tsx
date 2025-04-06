@@ -10,6 +10,8 @@ import { Input } from '../src/components/Input';
 import { Button } from '../src/components/Button';
 import { Header } from '../src/components/Header';
 import { LoadingIndicator } from '../src/components/LoadingIndicator';
+import { OfflineNotification } from '../src/components/OfflineNotification';
+import { useOffline } from '../src/context/OfflineContext';
 
 export default function AddTransactionScreen() {
   const { roomId } = useLocalSearchParams<{ roomId: string }>();
@@ -20,6 +22,7 @@ export default function AddTransactionScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { isOnline, addOfflineTransaction } = useOffline();
 
   useEffect(() => {
     if (!roomId) {
@@ -52,21 +55,46 @@ export default function AddTransactionScreen() {
       return;
     }
 
+    // Create transaction payload
+    const transactionPayload = {
+      room_id: roomIdNumber,
+      description,
+      amount: parseFloat(amount),
+      type,
+      date: format(date, 'yyyy-MM-dd')
+    };
+
     setIsSubmitting(true);
+
     try {
-      await addTransaction({
-        room_id: roomIdNumber,
-        description,
-        amount: parseFloat(amount),
-        type,
-        date: format(date, 'yyyy-MM-dd')
-      });
-      
-      Alert.alert('Success', 'Transaction added successfully', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+      // If online, add transaction directly to API
+      if (isOnline) {
+        await addTransaction(transactionPayload);
+        Alert.alert('Success', 'Transaction added successfully', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } 
+      // If offline, store transaction locally
+      else {
+        await addOfflineTransaction(transactionPayload);
+        Alert.alert('Success', 'Transaction saved offline. It will sync when you reconnect.', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to add transaction');
+      // If we're online but the API call failed, try to save offline
+      if (isOnline) {
+        try {
+          await addOfflineTransaction(transactionPayload);
+          Alert.alert('Info', 'Could not connect to server. Transaction saved offline and will sync later.', [
+            { text: 'OK', onPress: () => router.back() }
+          ]);
+        } catch (offlineError) {
+          Alert.alert('Error', 'Failed to add transaction: ' + error.message);
+        }
+      } else {
+        Alert.alert('Error', error.message || 'Failed to add transaction');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -79,6 +107,7 @@ export default function AddTransactionScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       <Header title="Add Transaction" showBackButton />
+      <OfflineNotification />
       <ScrollView className="flex-1 p-6" keyboardShouldPersistTaps="handled">
         <Input
           label="Description"

@@ -3,11 +3,14 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
+import { useOffline } from '../../src/context/OfflineContext';
+import { OfflineNotification } from '../../src/components/OfflineNotification';
 import { Feather } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { syncOfflineTransactions } = useOffline();
 
   const navigateTo = (route: string) => {
     router.push(route);
@@ -15,6 +18,7 @@ export default function HomeScreen() {
 
   return (
     <ScrollView className="flex-1 bg-gray-100">
+      <OfflineNotification />
       <View className="p-6">
         <View className="bg-white rounded-lg p-6 shadow-sm mb-6">
           <Text className="text-2xl font-bold text-gray-800">

@@ -9,6 +9,8 @@ import { Header } from '../src/components/Header';
 import { Button } from '../src/components/Button';
 import { PeriodSelector } from '../src/components/PeriodSelector';
 import { LoadingIndicator } from '../src/components/LoadingIndicator';
+import { OfflineNotification } from '../src/components/OfflineNotification';
+import { useOffline } from '../src/context/OfflineContext';
 
 type Period = 'daily' | 'weekly' | 'monthly';
 
@@ -19,13 +21,49 @@ export default function TransactionsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { isOnline, syncOfflineTransactions, hasPendingTransactions } = useOffline();
 
   useEffect(() => {
     fetchTransactions();
   }, [period]);
 
+  // Add an effect to try syncing offline transactions when online
+  useEffect(() => {
+    if (isOnline && hasPendingTransactions) {
+      syncOfflineTransactions().then(() => {
+        // Refresh transactions after syncing
+        fetchTransactions();
+      });
+    }
+  }, [isOnline, hasPendingTransactions]);
+
   const fetchTransactions = async () => {
     setIsLoading(true);
+    
+    // If offline, show an alert but still try to load cached data if available
+    if (!isOnline) {
+      try {
+        const response = await getTransactions(period);
+        setTransactions(response.transactions);
+        setSelectedTransactions(new Set());
+      } catch (error) {
+        console.log('Offline mode - using cached data if available');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+    
+    // If online, sync any pending transactions before fetching
+    if (hasPendingTransactions) {
+      try {
+        await syncOfflineTransactions();
+      } catch (error) {
+        console.error('Failed to sync offline transactions:', error);
+      }
+    }
+    
+    // Now fetch the latest transactions
     try {
       const response = await getTransactions(period);
       setTransactions(response.transactions);
@@ -76,6 +114,7 @@ export default function TransactionsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       <Header title="Transactions" showBackButton />
+      <OfflineNotification />
       
       <View className="px-4 py-3 bg-white border-b border-gray-200">
         <PeriodSelector
