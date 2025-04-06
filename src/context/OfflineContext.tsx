@@ -20,7 +20,13 @@ interface OfflineContextType {
   hasPendingTransactions: boolean;
 }
 
-const OfflineContext = createContext<OfflineContextType | null>(null);
+const OfflineContext = createContext<OfflineContextType>({
+  isOnline: true,
+  offlineTransactionCount: 0,
+  addOfflineTransaction: async () => {},
+  syncOfflineTransactions: async () => {},
+  hasPendingTransactions: false
+});
 
 export const useOffline = () => {
   const context = useContext(OfflineContext);

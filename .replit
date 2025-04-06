@@ -27,11 +27,11 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm install && EXPO_NO_TYPESCRIPT_SETUP=1 npx expo start --web --port 5000 --clear"
+args = "npm install && npx expo start --web --port 5000 --clear"
 waitForPort = 5000
 
 [deployment]
-run = ["sh", "-c", "npm install && EXPO_NO_TYPESCRIPT_SETUP=1 npx expo start --web --port 5000 --clear"]
+run = ["sh", "-c", "npm install && npx expo start --web --port 5000 --clear"]
 
 [[ports]]
 localPort = 5000
