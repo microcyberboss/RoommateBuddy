@@ -27,7 +27,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npx expo start --web --port 5000 --no-dev --minify"
+args = "EXPO_DEBUG=1 npx expo start --web --port 5000 --no-dev --minify"
 waitForPort = 5000
 
 [deployment]

@@ -1,15 +1,11 @@
-import 'react-native-gesture-handler';
-import React from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import TestScreen from './app/test';
+import { Stack } from 'expo-router';
+import { registerRootComponent } from 'expo';
+import { ExpoRoot } from 'expo-router';
 
-// Simplified version to bypass potential issues with expo-router
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <StatusBar style="auto" />
-      <TestScreen />
-    </SafeAreaProvider>
+    <ExpoRoot context={require.context('./app', true)} />
   );
 }
+
+registerRootComponent(App);
